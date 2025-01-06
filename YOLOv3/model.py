@@ -76,6 +76,7 @@ class ScalePrediction(nn.Module):
     # Make an actual prediction (happens 3 times total)
     def __init__(self, in_channels, num_classes):
         super().__init__()
+        self.num_classes = num_classes
         self.prediction = nn.Sequential(
             CNNBlock(in_channels, 2*in_channels, kernel_size=3, padding=1),
             # there are 3 anchor boxes to predict 3 objects per grid cell
@@ -152,5 +153,4 @@ class YOLOv3(nn.Module):
                     in_channels *= 3
             
         return layers
-
 
