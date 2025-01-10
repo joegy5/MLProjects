@@ -19,4 +19,4 @@ def tokenize(examples):
         'labels': english_examples['input_ids']
     }
 
-
+tokenized_datasets = wmt_dataset.map(tokenize, batched=True)
