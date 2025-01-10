@@ -3,7 +3,7 @@ from transformers import AutoTokenizer
 from datasets import load_dataset
 
 wmt_dataset = load_dataset('wmt14', 'fr-en')
-wmt_dataset = load_dataset('wmt14', 'fr-en', streaming=True)
+tokenizer = AutoTokenizer.from_pretrained('gpt2', use_fast=True)
 if tokenizer.pad_token is None:
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
