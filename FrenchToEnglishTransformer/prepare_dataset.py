@@ -4,6 +4,8 @@ from datasets import load_dataset
 
 wmt_dataset = load_dataset('wmt14', 'fr-en')
 tokenizer = AutoTokenizer.from_pretrained('gpt2', use_fast=True)
+if tokenizer.pad_token is None:
+    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
 def tokenize(examples):
     english_examples = [example['en'] for example in examples['translation']]
