@@ -2,7 +2,7 @@ import torch
 from transformers import AutoTokenizer
 from datasets import load_dataset
 
-wmt_dataset = load_dataset('wmt14', 'fr-en')
+dataset = load_dataset('iwslt2017', 'iwslt2017-fr-en')
 tokenizer = AutoTokenizer.from_pretrained('gpt2', use_fast=True)
 if tokenizer.pad_token is None:
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -21,4 +21,4 @@ def tokenize(examples):
         'labels': english_examples['input_ids']
     }
 
-tokenized_datasets = wmt_dataset.map(tokenize, batched=True)
+tokenized_datasets = dataset.map(tokenize, batched=True)
