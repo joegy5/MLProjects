@@ -11,7 +11,7 @@ from model import Transformer, TransformerLoss
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 PIN_MEMORY = True if torch.cuda.is_available() else False
 VOCAB_SIZE = tokenizer.vocab_size
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 D_MODEL = 512
 NUM_HEADS = 8
 NUM_LAYERS = 6
