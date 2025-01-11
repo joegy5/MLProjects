@@ -90,7 +90,7 @@ for epoch in range(100):
         decoder_padding_masks = batch['decoder_attention_masks'].to(DEVICE)
         output_labels = batch['output_labels'].to(DEVICE)
 
-        start_token_batch = torch.full((BATCH_SIZE, 1), tokenizer.bos_token_id)
+        start_token_batch = torch.full((BATCH_SIZE, 1), tokenizer.bos_token_id).to(DEVICE)
         shifted_output_labels = torch.cat([start_token_batch, output_labels[:, :-1]], dim=-1).to(DEVICE)
 
         decoder_outputs = model(input_token_ids, shifted_output_labels, encoder_padding_masks, decoder_padding_masks)
