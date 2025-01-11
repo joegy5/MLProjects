@@ -91,7 +91,7 @@ for epoch in range(100):
         output_labels = batch['output_labels'].to(DEVICE)
 
         start_token_batch = torch.full((BATCH_SIZE, 1), tokenizer.bos_token_id)
-        shifted_output_labels = torch.cat([start_token_batch, output_labels[:, :-1]], dim=-1)
+        shifted_output_labels = torch.cat([start_token_batch, output_labels[:, :-1]], dim=-1).to(DEVICE)
 
         decoder_outputs = model(input_token_ids, shifted_output_labels, encoder_padding_masks, decoder_padding_masks)
         loss = loss_function(decoder_outputs, output_labels, tokenizer.pad_token_id)
