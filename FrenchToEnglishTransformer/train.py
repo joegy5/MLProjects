@@ -11,7 +11,7 @@ from model import Transformer, TransformerLoss
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 PIN_MEMORY = True if torch.cuda.is_available() else False
 VOCAB_SIZE = tokenizer.vocab_size
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 D_MODEL = 512
 NUM_HEADS = 8
 NUM_LAYERS = 6
@@ -24,7 +24,7 @@ NUM_EPOCHS = 15
 WARMUP_STEPS = 4000
 
 def learning_rate_lambda_function(step_number):
-    return D_MODEL ** (-0.5) * min(step_number ** (-0.5), step_number * WARMUP_STEPS ** (-1.5))
+    return D_MODEL ** (-0.5) * min((step_number + 1) ** (-0.5), (step_number + 1) * WARMUP_STEPS ** (-1.5))
 
 def collate_function(batch):
     input_ids = torch.stack([torch.tensor(example['input_token_ids']) for example in batch])
@@ -36,10 +36,10 @@ def collate_function(batch):
         'input_token_ids': input_ids,
         'encoder_attention_masks': encoder_attention_masks,
         'decoder_attention_masks': decoder_attention_masks,
-        'labels': output_labels
+        'output_labels': output_labels
     }
 
-def generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, max_length):
+def generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, max_length, device):
     model.eval()
     decoder_inputs = torch.tensor([start_token]).unsqueeze(0).expand(batch_size) # (batch_size, sentence_length=1)
     with torch.no_grad():
@@ -53,6 +53,7 @@ def generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, 
 
     return decoder_inputs
 
+
 num_epochs = NUM_EPOCHS
 model = Transformer(
     vocab_size=VOCAB_SIZE, 
@@ -63,7 +64,8 @@ model = Transformer(
 )
 model.to(DEVICE)
 loss_function = TransformerLoss()
-optimizer = Adam(model.parameters(), lr=1e-4)
+parameters = model.parameters()
+optimizer = Adam(parameters, lr=1e-4)
 scheduler = LambdaLR(optimizer, learning_rate_lambda_function)
 
 # First overfit to small dataset to ensure that the model is working
@@ -80,6 +82,7 @@ small_loader = DataLoader(
 
 for epoch in range(100):
     model.train()
+    print("CURRENT EPOCH: " + str(epoch))
     for batch_index, batch in enumerate(small_loader):
         optimizer.zero_grad()
         input_token_ids = batch['input_token_ids'].to(DEVICE)
@@ -87,9 +90,12 @@ for epoch in range(100):
         decoder_padding_masks = batch['decoder_attention_masks'].to(DEVICE)
         output_labels = batch['output_labels'].to(DEVICE)
 
-        decoder_outputs = model(input_token_ids, output_labels[:, :-1], encoder_padding_masks, decoder_padding_masks)
-        loss = loss_function(decoder_outputs, output_labels)
-        print("overfit batch loss: " + str(loss))
+        start_token_batch = torch.full((BATCH_SIZE, 1), tokenizer.bos_token_id)
+        shifted_output_labels = torch.cat([start_token_batch, output_labels[:, :-1]], dim=-1)
+
+        decoder_outputs = model(input_token_ids, shifted_output_labels, encoder_padding_masks, decoder_padding_masks)
+        loss = loss_function(decoder_outputs, output_labels, tokenizer.pad_token_id)
+        print("overfit batch loss: " + str(loss.item()))
         loss.backward()
         optimizer.step()
         scheduler.step()
@@ -100,3 +106,4 @@ for epoch in range(100):
 #     max_length = batch.shape[1]
 #     device = DEVICE
 #     generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, max_length, device)
+
