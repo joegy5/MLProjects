@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader # type: ignore
 from torch.optim import Adam # type: ignore
 from torch.optim.lr_scheduler import LambdaLR # type: ignore
 
-from prepare_dataset import wmt_dataset, tokenizer, tokenize
+from prepare_dataset import tokenizer, tokenize, tokenized_datasets
 
 from model import Transformer, TransformerLoss 
 
@@ -53,7 +53,6 @@ def generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, 
 
     return decoder_inputs
 
-tokenized_datasets = wmt_dataset.map(tokenize, batched=True)
 num_epochs = NUM_EPOCHS
 model = Transformer(
     vocab_size=VOCAB_SIZE, 
