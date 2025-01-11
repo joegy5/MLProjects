@@ -95,9 +95,9 @@ for epoch in range(100):
         optimizer.step()
         scheduler.step()
 
-for batch_index, batch in enumerate(small_loader):
-    encoder_inputs = batch['input_token_ids']
-    start_token = tokenizer.bos_token_id
-    max_length = batch.shape[1]
-    device = DEVICE
-    generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, max_length, device)
+# for batch_index, batch in enumerate(small_loader):
+#     encoder_inputs = batch['input_token_ids']
+#     start_token = tokenizer.bos_token_id
+#     max_length = batch.shape[1]
+#     device = DEVICE
+#     generate_overfit(model, encoder_inputs, encoder_padding_masks, start_token, max_length, device)
