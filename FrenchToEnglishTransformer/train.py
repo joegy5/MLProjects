@@ -85,13 +85,13 @@ for epoch in range(100):
     print("CURRENT EPOCH: " + str(epoch))
     for batch_index, batch in enumerate(small_loader):
         optimizer.zero_grad()
-        input_token_ids = batch['input_token_ids'].to(DEVICE)
-        encoder_padding_masks = batch['encoder_attention_masks'].to(DEVICE)
-        decoder_padding_masks = batch['decoder_attention_masks'].to(DEVICE)
-        output_labels = batch['output_labels'].to(DEVICE)
+        input_token_ids = batch['input_token_ids']
+        encoder_padding_masks = batch['encoder_attention_masks']
+        decoder_padding_masks = batch['decoder_attention_masks']
+        output_labels = batch['output_labels']
 
-        start_token_batch = torch.full((BATCH_SIZE, 1), tokenizer.bos_token_id).to(DEVICE)
-        shifted_output_labels = torch.cat([start_token_batch, output_labels[:, :-1]], dim=-1).to(DEVICE)
+        start_token_batch = torch.full((BATCH_SIZE, 1), tokenizer.bos_token_id)
+        shifted_output_labels = torch.cat([start_token_batch, output_labels[:, :-1]], dim=-1)
 
         decoder_outputs = model(input_token_ids, shifted_output_labels, encoder_padding_masks, decoder_padding_masks)
         loss = loss_function(decoder_outputs, output_labels, tokenizer.pad_token_id)
