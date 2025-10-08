@@ -90,25 +90,20 @@ class Conv2D():
         return Z, np.maximum(Z, 0)
 
     def backward(self, A, Z, dA):
-        # backpropagate through relu layer 
         dZ = dA * np.where(Z > 0, 1, 0)
         batch_size, in_dim, out_dim, c_out, kernel_size, c_in = A.shape[0], A.shape[1], dZ.shape[1], self.K.shape[0], self.K.shape[1], self.K.shape[-1]
-        # perform precomputations using im2col
         pad = kernel_size - 1
         A_2d = self.im2col(A)
         dZ_2d = dZ.reshape(batch_size * out_dim * out_dim, c_out)
         dZ_padded_2d = self.im2col(np.pad(dZ, ((0, 0),(pad, pad),(pad, pad),(0, 0))))
         K_rotated_reshaped_2d = np.flip(self.K, axis=(1,2)).reshape(c_out * kernel_size * kernel_size, c_in)
-        # calculate gradients
         dAprev = np.matmul(dZ_padded_2d, K_rotated_reshaped_2d).reshape(batch_size, in_dim, in_dim, c_in)
         dK = (1. / batch_size) * np.matmul(dZ_2d.T, A_2d).reshape(c_out, kernel_size, kernel_size, c_in)
         db = (1./ batch_size) * dZ.sum(axis=(0,1,2))
-        # Update Adam gradients
         self.VdK = self.beta1 * self.VdK + (1. - self.beta1) * dK
         self.Vdb = self.beta1 * self.Vdb + (1. - self.beta1) * db
         self.SdK = self.beta2 * self.SdK + (1. - self.beta2) * (dK ** 2)
         self.Sdb = self.beta2 * self.Sdb + (1. - self.beta2) * (db ** 2)
-        # Update weights and biases 
         self.K -= self.learning_rate * self.VdK / (np.sqrt(self.SdK) + self.epsilon)
         self.b -= self.learning_rate * self.Vdb / (np.sqrt(self.Sdb) + self.epsilon)
         return dAprev
